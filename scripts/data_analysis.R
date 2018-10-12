@@ -2,32 +2,26 @@ library(readr)
 library(caret)
 library(dplyr)
 
-data <- read.delim("../data/GSE102130_K27Mproject.RSEM.vh20170621.txt", 
-                   sep = "\t", 
-                   nrows = 6, 
-                   stringsAsFactors = FALSE, 
-                   header = TRUE)
+## counting the number of samples
+local_path <- "../data/filbin/GSE102130_K27Mproject.RSEM.vh20170621.txt" 
+data <- read_tsv("../data/filbin/GSE102130_K27Mproject.RSEM.vh20170621.txt")
 
-col_classes <- sapply(data, class)
 
-data <- read_tsv("../data/GSE102130_K27Mproject.RSEM.vh20170621.txt")
+## sampĺing data
+set.seed(333)
+n <- ncol(data)
+sampling <- sample(2:n, 30)
+data.s <- data[, sampling]
+dim(data.s)
+data.s <- t(data.s)
+rownames(data.s) <- colnames(data)[sampling]
+colnames(data.s) <- data$Gene
+head(data.s[, 1:6])
 
-dim(data)
-
-## tomar slide
-
-gene_names <- data[,1]
-
-## drop col names
-data.p <- data[, -1] %>%
-                 t() %>% 
-                 as.data.frame()
-dim(data.p)
-
-## droping constant variables
-data.smtv <- select(data.smt, -nearZeroVar(data.smt))
-dim(data.smtv)
+## drop constant variables
+drop <- nearZeroVar(data.s)
+data.m <- as.matrix(data.s[, -drop]) 
 
 ## select non constant variables
-heatmap(as.matrix(data.smtv), labCol = "")
+heatmap(data.m)
 
