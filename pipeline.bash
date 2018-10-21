@@ -1,12 +1,21 @@
+## single cell rna seq data processing workflow
+
 ## setting paths
 export PATH=$PATH:/usr/local/bin/FastQC
 export PATH=$PATH:~/.local/bin/cutadapt
 export PATH=$PATH:/usr/local/bin/TrimGalore-0.4.5/
 export PATH=$PATH:/usr/local/bin/bowtie2-2.1.0
+export PATH=$PATH:/usr/local/bin/subread-1.6.3-Linux-x86_64/bin/
+export PATH=$PATH:inst/seqtk/ 
+
+
+## subsample fastq files
+seqtk sample -s3 data/fastq/ERR523111_1.fastq.gz 2 > data/fastq/ERR523111_1_slide.fastq
+seqtk sample -s3 data/fastq/ERR523111_2.fastq.gz 2 > data/fastq/ERR523111_2_slide.fastq
 
 
 ## trimming fastqc
-trim_galore --nextera data/fastq/*.fastq.gz -o data/fastqc_processed/ 
+trim_galore --nextera data/fastq/ERR523111_*_slide.fastq -o data/fastq_processed/
 
 ## quality control  
 fastqc data/fastq_processed/*.fastq.gz -o reports/
