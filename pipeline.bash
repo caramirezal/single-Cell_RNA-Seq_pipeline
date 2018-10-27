@@ -1,30 +1,36 @@
 ## single cell rna seq data processing workflow
 
 ## setting paths
-export PATH=$PATH:/usr/local/bin/FastQC
-export PATH=$PATH:~/.local/bin/cutadapt
-export PATH=$PATH:/usr/local/bin/TrimGalore-0.4.5/
-export PATH=$PATH:/usr/local/bin/bowtie2-2.1.0
-export PATH=$PATH:/usr/local/bin/subread-1.6.3-Linux-x86_64/bin/
-export PATH=$PATH:inst/seqtk/ 
+export PATH=$PATH:inst/seqtk/
+export PATH=$PATH:inst/TrimGalore-0.4.5/
+export PATH=$PATH:inst/FastQC
+export PATH=$PATH:inst/bowtie2-2.3.4.3-linux-x86_64/
+#export PATH=$PATH:~/.local/bin/cutadapt
+#export PATH=$PATH:/usr/local/bin/subread-1.6.3-Linux-x86_64/bin/
+ 
 
 
 ## subsample fastq files
-seqtk sample -s3 data/fastq/ERR523111_1.fastq.gz 2 > data/fastq/ERR523111_1_slide.fastq
-seqtk sample -s3 data/fastq/ERR523111_2.fastq.gz 2 > data/fastq/ERR523111_2_slide.fastq
-
+echo '... seqtk subsampling fastq files ...'
+seqtk sample -s3 data/fastq/ERR523111_1.fastq.gz 1000 > data/fastq/ERR523111_1_slide.fastq
+seqtk sample -s3 data/fastq/ERR523111_2.fastq.gz 1000 > data/fastq/ERR523111_2_slide.fastq
+echo 'seqtk subsampling finished'
 
 ## trimming fastqc
+echo '... trim_galore trimming sequencues ...'
 trim_galore --nextera data/fastq/ERR523111_*_slide.fastq -o data/fastq_processed/
+echo 'trim_galore finished'
 
-## quality control  
-fastqc data/fastq_processed/*.fastq.gz -o reports/
+## quality control 
+echo '... fastqc quality control visualization'
+fastqc data/fastq_processed/*.fq -o reports/
+echo 'fastqc finished'
 
 ## alignment
-bowtie2 -x data/bowtie2_index/Mus_musculus_GRCm38 --threads 7 --end-to-end --very-fast -1 data/fastq/*_1.fastq.gz -2 data/fastq/*_2.fastq.gz -S data/sam/alignment.sam
+bowtie2 -x data/bowtie2_index/Mus_musculus_GRCm38 --threads 4 --end-to-end --very-fast -1 data/fastq/*1_slide_trimmed.fq -2 data/fastq/*2_slide_trimmed.fq -S data/sam/alignment.sam
 
 ## sam to bam
-samtools view -Sb data/sam/alignment.sam > data/bam/alignment.bam
+#samtools view -Sb data/sam/alignment.sam > data/bam/alignment.bam
 
 ## quantification
-featureCounts -Q 30 -p -a data/gtf_reference/Mus_musculus.GRCm38.94.gtf -o data/rna_quant.tsv data/bam/alignment.bam
+#featureCounts -Q 30 -p -a data/gtf_reference/Mus_musculus.GRCm38.94.gtf -o data/rna_quant.tsv data/bam/alignment.bam
