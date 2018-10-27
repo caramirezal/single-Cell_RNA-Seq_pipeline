@@ -12,13 +12,13 @@ export PATH=$PATH:inst/bowtie2-2.3.4.3-linux-x86_64/
 
 ## subsample fastq files
 echo '... seqtk subsampling fastq files ...'
-seqtk sample -s3 data/fastq/ERR523111_1.fastq.gz 1000 > data/fastq/ERR523111_1_slide.fastq
-seqtk sample -s3 data/fastq/ERR523111_2.fastq.gz 1000 > data/fastq/ERR523111_2_slide.fastq
+seqtk sample -s3 data/fastq/ERR523111_1.fastq.gz 10 > data/fastq/ERR523111_1_slide.fastq
+seqtk sample -s3 data/fastq/ERR523111_2.fastq.gz 10 > data/fastq/ERR523111_2_slide.fastq
 echo 'seqtk subsampling finished'
 
 ## trimming fastqc
 echo '... trim_galore trimming sequencues ...'
-trim_galore --nextera data/fastq/ERR523111_*_slide.fastq -o data/fastq_processed/
+trim_galore --nextera --paired data/fastq/E*1_slide.fastq data/fastq/E*1_slide.fastq --trim1 -o data/fastq_processed/
 echo 'trim_galore finished'
 
 ## quality control 
@@ -27,7 +27,7 @@ fastqc data/fastq_processed/*.fq -o reports/
 echo 'fastqc finished'
 
 ## alignment
-bowtie2 -x data/bowtie2_index/Mus_musculus_GRCm38 --threads 4 --end-to-end --very-fast -1 data/fastq/*1_slide_trimmed.fq -2 data/fastq/*2_slide_trimmed.fq -S data/sam/alignment.sam
+bowtie2 -x data/bowtie2_index/Mus_musculus_GRCm38 --threads 3 --end-to-end --very-fast -1 data/fastq_processed/*1.fq -2 data/fastq_processed/*2.fq -S data/sam/alignment.sam
 
 ## sam to bam
 #samtools view -Sb data/sam/alignment.sam > data/bam/alignment.bam
